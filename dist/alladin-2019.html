@@ -3,7 +3,7 @@
 <head>
  <meta charset="utf-8">
   <title>Alladin</title>
-  <link rel="stylesheet" href="css/plyr.css">
+  <link rel="stylesheet" href="https://unpkg.com/plyr@3/dist/plyr.css">
   <style>
     .container {
 	margin: 150px auto;
@@ -23,11 +23,40 @@ video {
 </div>
 <!-- Plyr resources and browser polyfills are specified in the pen settings -->
 <!-- Hls.js 0.9.x and 0.10.x both have critical bugs affecting this demo. Using fixed git hash to when it was working (0.10.0 pre-release), until https://github.com/video-dev/hls.js/issues/1790 has been resolved -->
-<script src="js/hls.min.js"></script>
+<script src="https://cdn.rawgit.com/video-dev/hls.js/18bb552/dist/hls.min.js"></script>
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=es6,Array.prototype.includes,CustomEvent,Object.entries,Object.values,URL"></script>
-<script src="js/plyr.js"></script>
-<script scr="js/script.js"></script>
-<script src="js/app.js"></script>	
+<script src="https://unpkg.com/plyr@3"></script>
+<script>
+
+      document.addEventListener('DOMContentLoaded', () => {
+  const source = 'https://hls26s.cdnfile.info/stream_new/5a16746f2c8df95866bbc8a0e55ed97b/aladdin-2019.9c7aff12c06abba8a542695f06eedc57.m3u8';
+  const video = document.querySelector('video');
+
+  // For more options see: https://github.com/sampotts/plyr/#options
+  // captions.update is required for captions to work with hls.js
+  const player = new Plyr(video, { captions: { active: true, update: true, language: 'en' } });
+
+  if (!Hls.isSupported()) {
+    video.src = source;
+  } else {
+    // For more Hls.js options, see https://github.com/dailymotion/hls.js
+    const hls = new Hls();
+    hls.loadSource(source);
+    hls.attachMedia(video);
+    window.hls = hls;
+
+    // Handle changing captions
+    player.on('languagechange', () => {
+      // Caption support is still flaky. See: https://github.com/sampotts/plyr/issues/994
+      setTimeout(() => hls.subtitleTrack = player.currentTrack, 50);
+    });
+  }
+
+  // Expose player so it can be used from the console
+  window.player = player;
+});
+      //# sourceURL=pen.js
+    
+</script>
 </body>
 </html>
-
